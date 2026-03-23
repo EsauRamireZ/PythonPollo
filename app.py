@@ -14,36 +14,33 @@ app.secret_key = 'clave_secreta_super_segura_2026'
 RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
 RECAPTCHA_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
 
-# ==================== CONFIGURACIÓN SQLITE ====================
-DB_NAME = "usuarios.db"
+# ==================== SQLITE (ruta absoluta recomendada) ====================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_NAME = os.path.join(BASE_DIR, "usuarios.db")
 
 def get_connection():
-    """Crea y retorna una conexión a SQLite"""
     try:
         conn = sqlite3.connect(DB_NAME)
-        conn.row_factory = sqlite3.Row  # opcional: acceder por nombre de columna
+        conn.row_factory = sqlite3.Row
         return conn
     except Exception as e:
         print(f"Error conectando a SQLite: {e}")
         return None
 
 def require_login():
-    """Protege rutas: si no hay sesión, redirige al login"""
     if 'user_id' not in session:
         flash('Inicia sesión primero', 'warning')
         return False
     return True
 
-# ==================== INICIALIZACIÓN BASE DE DATOS ====================
+# ==================== INICIALIZACIÓN DB ====================
 def init_db():
-    """Crea las tablas si no existen"""
     try:
         conn = get_connection()
         if conn:
-            cursor = conn.cursor()
+            cur = conn.cursor()
 
-            # Tabla usuarios
-            cursor.execute("""
+            cur.execute("""
                 CREATE TABLE IF NOT EXISTS usuarios (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombre TEXT NOT NULL,
@@ -53,8 +50,7 @@ def init_db():
                 )
             """)
 
-            # Tabla productos
-            cursor.execute("""
+            cur.execute("""
                 CREATE TABLE IF NOT EXISTS productos (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombre TEXT NOT NULL,
@@ -69,20 +65,23 @@ def init_db():
 
             conn.commit()
             conn.close()
-            print("✅ Base de datos SQLite inicializada (usuarios + productos)")
+            print("✅ DB lista (usuarios + productos)")
     except Exception as e:
-        print(f"Error inicializando base de datos: {e}")
+        print(f"Error inicializando DB: {e}")
 
-# ==================== FUNCIÓN VERIFICAR reCAPTCHA ====================
+# ✅ IMPORTANTE PARA RENDER/GUNICORN
+init_db()
+
+# ==================== reCAPTCHA ====================
 def verificar_recaptcha(respuesta_recaptcha):
     try:
         data = {'secret': RECAPTCHA_SECRET_KEY, 'response': respuesta_recaptcha}
-        respuesta = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data, timeout=5)
-        return respuesta.json().get('success', False)
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data, timeout=5)
+        return r.json().get('success', False)
     except:
         return False
 
-# ==================== RUTAS AUTH ====================
+# ==================== AUTH ====================
 @app.route('/')
 def inicio():
     return render_template('inicio.html')
@@ -95,9 +94,9 @@ def login():
 
         try:
             conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute('SELECT id, nombre, password FROM usuarios WHERE email = ?', (email,))
-            user = cursor.fetchone()
+            cur = conn.cursor()
+            cur.execute('SELECT id, nombre, password FROM usuarios WHERE email = ?', (email,))
+            user = cur.fetchone()
             conn.close()
 
             if user and check_password_hash(user['password'], password):
@@ -106,8 +105,8 @@ def login():
                 return redirect(url_for('dashboard'))
             else:
                 flash('Email o contraseña incorrectos', 'danger')
-        except Exception:
-            flash('Error en el sistema', 'danger')
+        except Exception as e:
+            flash(f'Error en el sistema: {str(e)}', 'danger')
 
     return render_template('login.html')
 
@@ -120,26 +119,21 @@ def register():
         confirm_password = request.form.get('confirm_password', '').strip()
         recaptcha_response = request.form.get('g-recaptcha-response', '')
 
-        # 1) Validar reCAPTCHA
         if not verificar_recaptcha(recaptcha_response):
             flash('Por favor, completa el reCAPTCHA', 'danger')
             return redirect(url_for('register'))
 
-        # 2) Validaciones backend
         errores = []
 
-        # Nombre
         if not nombre or len(nombre.strip()) < 3:
             errores.append('El nombre debe tener al menos 3 letras reales.')
         elif not re.match(r"^[A-Za-zñÑáéíóúÁÉÍÓÚ\s]+$", nombre):
             errores.append('El nombre solo puede contener letras.')
 
-        # Email
         email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_regex, email):
             errores.append('Ingresa un correo válido.')
 
-        # Password (sin símbolos)
         password_regex = r"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}$"
         if not re.match(password_regex, password):
             errores.append('La contraseña debe tener: 8-20 caracteres, Mayúscula, Minúscula y Número.')
@@ -148,32 +142,31 @@ def register():
             errores.append('Las contraseñas no coinciden.')
 
         if errores:
-            for error in errores:
-                flash(error, 'danger')
+            for e in errores:
+                flash(e, 'danger')
             return redirect(url_for('register'))
 
         try:
             conn = get_connection()
-            cursor = conn.cursor()
+            cur = conn.cursor()
 
-            cursor.execute('SELECT id FROM usuarios WHERE email = ?', (email,))
-            if cursor.fetchone():
+            cur.execute('SELECT id FROM usuarios WHERE email = ?', (email,))
+            if cur.fetchone():
                 conn.close()
                 flash('Este correo ya está registrado', 'danger')
                 return redirect(url_for('register'))
 
             hashed_pw = generate_password_hash(password)
-            cursor.execute(
+            cur.execute(
                 'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)',
                 (nombre.strip(), email, hashed_pw)
             )
             conn.commit()
-            new_id = cursor.lastrowid
+            new_id = cur.lastrowid
             conn.close()
 
             session['user_id'] = new_id
             session['user_name'] = nombre.strip()
-
             flash(f'¡Bienvenido {nombre.strip()}! Cuenta creada.', 'success')
             return redirect(url_for('dashboard'))
 
@@ -187,7 +180,6 @@ def dashboard():
     if not require_login():
         return redirect(url_for('login'))
 
-    # Estadísticas de productos (opcionales)
     total_productos = 0
     productos_activos = 0
     total_stock = 0
@@ -199,7 +191,7 @@ def dashboard():
         cur.execute("SELECT COUNT(*) AS c FROM productos")
         total_productos = cur.fetchone()['c']
 
-        cur.execute("SELECT COUNT(*) AS c FROM productos WHERE activo = 1")
+        cur.execute("SELECT COUNT(*) AS c FROM productos WHERE activo=1")
         productos_activos = cur.fetchone()['c']
 
         cur.execute("SELECT IFNULL(SUM(stock),0) AS s FROM productos")
@@ -223,60 +215,96 @@ def logout():
     flash('Sesión cerrada', 'info')
     return redirect(url_for('inicio'))
 
-# ==================== CRUD PRODUCTOS ====================
-
+# ==================== PRODUCTOS (LISTA CON PAGINACIÓN) ====================
 @app.route('/productos')
 def productos_list():
     if not require_login():
         return redirect(url_for('login'))
 
+    # Filtros
     q = request.args.get('q', '').strip()
     estado = request.args.get('estado', '').strip()
     min_price = request.args.get('min_price', '').strip()
     max_price = request.args.get('max_price', '').strip()
 
-    query = """
-        SELECT id, nombre, descripcion, precio, stock, activo, created_at, updated_at
-        FROM productos
-        WHERE 1=1
-    """
+    # Paginación
+    try:
+        page = int(request.args.get('page', '1'))
+        if page < 1:
+            page = 1
+    except:
+        page = 1
+
+    PER_PAGE = 6
+    offset = (page - 1) * PER_PAGE
+
+    where = " WHERE 1=1 "
     params = []
 
     if q:
-        query += " AND nombre LIKE ?"
+        where += " AND nombre LIKE ? "
         params.append(f"%{q}%")
 
     if estado in ('0', '1'):
-        query += " AND activo = ?"
+        where += " AND activo = ? "
         params.append(int(estado))
 
     if min_price:
         try:
-            query += " AND precio >= ?"
+            where += " AND precio >= ? "
             params.append(float(min_price))
         except:
             pass
 
     if max_price:
         try:
-            query += " AND precio <= ?"
+            where += " AND precio <= ? "
             params.append(float(max_price))
         except:
             pass
 
-    query += " ORDER BY id DESC"
-
     try:
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute(query, params)
+
+        # Total registros
+        cur.execute("SELECT COUNT(*) AS c FROM productos" + where, params)
+        total = cur.fetchone()['c']
+
+        total_pages = (total + PER_PAGE - 1) // PER_PAGE
+        if total_pages == 0:
+            total_pages = 1
+
+        if page > total_pages:
+            page = total_pages
+            offset = (page - 1) * PER_PAGE
+
+        query = """
+            SELECT id, nombre, descripcion, precio, stock, activo
+            FROM productos
+        """ + where + """
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?
+        """
+
+        cur.execute(query, params + [PER_PAGE, offset])
         productos = cur.fetchall()
         conn.close()
-        return render_template('productos.html', productos=productos, nombre=session.get('user_name', ''))
-    except Exception:
-        flash('Error cargando productos', 'danger')
+
+        return render_template(
+            'productos.html',
+            productos=productos,
+            nombre=session.get('user_name', ''),
+            page=page,
+            total_pages=total_pages,
+            total=total
+        )
+
+    except Exception as e:
+        flash(f'Error cargando productos: {str(e)}', 'danger')
         return redirect(url_for('dashboard'))
 
+# ==================== PRODUCTOS (NUEVO) ====================
 @app.route('/productos/nuevo', methods=['GET', 'POST'])
 def productos_nuevo():
     if not require_login():
@@ -321,9 +349,11 @@ def productos_nuevo():
             cur.execute("""
                 INSERT INTO productos (nombre, descripcion, precio, stock, activo, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (nombre, descripcion, precio_f, stock_i, activo_i, datetime.now().isoformat(sep=' ', timespec='seconds')))
+            """, (nombre, descripcion, precio_f, stock_i, activo_i,
+                  datetime.now().isoformat(sep=' ', timespec='seconds')))
             conn.commit()
             conn.close()
+
             flash("Producto creado correctamente ✅", "success")
             return redirect(url_for('productos_list'))
         except Exception as e:
@@ -332,6 +362,7 @@ def productos_nuevo():
 
     return render_template('producto_form.html', modo='nuevo', producto=None)
 
+# ==================== PRODUCTOS (EDITAR) ====================
 @app.route('/productos/<int:producto_id>/editar', methods=['GET', 'POST'])
 def productos_editar(producto_id):
     if not require_login():
@@ -384,8 +415,8 @@ def productos_editar(producto_id):
 
             cur.execute("""
                 UPDATE productos
-                SET nombre = ?, descripcion = ?, precio = ?, stock = ?, activo = ?, updated_at = ?
-                WHERE id = ?
+                SET nombre=?, descripcion=?, precio=?, stock=?, activo=?, updated_at=?
+                WHERE id=?
             """, (nombre, descripcion, precio_f, stock_i, activo_i,
                   datetime.now().isoformat(sep=' ', timespec='seconds'),
                   producto_id))
@@ -402,6 +433,7 @@ def productos_editar(producto_id):
         flash(f"Error cargando producto: {str(e)}", "danger")
         return redirect(url_for('productos_list'))
 
+# ==================== PRODUCTOS (ELIMINAR) ====================
 @app.route('/productos/<int:producto_id>/eliminar', methods=['POST'])
 def productos_eliminar(producto_id):
     if not require_login():
@@ -410,7 +442,7 @@ def productos_eliminar(producto_id):
     try:
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("DELETE FROM productos WHERE id = ?", (producto_id,))
+        cur.execute("DELETE FROM productos WHERE id=?", (producto_id,))
         conn.commit()
         conn.close()
         flash("Producto eliminado 🗑️", "info")
@@ -423,6 +455,4 @@ def productos_eliminar(producto_id):
 if __name__ == '__main__':
     if not os.path.exists('templates'):
         os.makedirs('templates')
-
-    init_db()
     app.run(debug=True, port=5000)

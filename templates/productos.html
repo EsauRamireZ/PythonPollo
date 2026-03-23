@@ -1,0 +1,379 @@
+<!-- templates/productos.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Productos | Panel</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- FontAwesome (para íconos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --green:#2e7d32;
+      --green-2:#43a047;
+      --blue:#0b3a66;
+      --bg:#f4f7f9;
+      --border:#d9e2ef;
+      --text:#2d3436;
+      --muted:#6b7280;
+    }
+
+    body{
+      font-family:'Inter',sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page-wrap{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+    }
+
+    .page-header{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:18px 20px 10px 20px;
+    }
+
+    .page-header .avatar{
+      width:52px;height:52px;
+      border-radius:50%;
+      background:#eef2ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#1e3799;
+      border:1px solid var(--border);
+    }
+
+    .page-header h4{
+      margin:0;
+      font-weight:700;
+    }
+
+    .green-line{
+      height:4px;
+      background: var(--green);
+    }
+
+    .filters{
+      padding:18px 20px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px 18px;
+      align-items:flex-end;
+    }
+
+    .filter-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 260px;
+    }
+
+    .filter-item label{
+      width:90px;
+      color: var(--text);
+      font-weight:600;
+      font-size:0.9rem;
+    }
+
+    .filter-item input,
+    .filter-item select{
+      height:36px;
+      border:1px solid var(--border);
+      border-radius:4px;
+      padding:0 10px;
+      outline:none;
+      min-width: 170px;
+      background:#fff;
+    }
+
+    .filter-item input:focus,
+    .filter-item select:focus{
+      border-color: #1e3799;
+      box-shadow: 0 0 0 3px rgba(30,55,153,0.08);
+    }
+
+    .filter-actions{
+      display:flex;
+      gap:10px;
+      margin-left:auto;
+    }
+
+    .btn-green{
+      background: var(--green-2);
+      border: none;
+      color:#fff;
+      height:36px;
+      padding:0 18px;
+      border-radius:4px;
+      font-weight:600;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn-green:hover{ opacity:.92; }
+
+    .btn-outline{
+      background:#fff;
+      border:1px solid var(--border);
+      color:#1f2937;
+      height:36px;
+      padding:0 18px;
+      border-radius:4px;
+      font-weight:600;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn-outline:hover{ background:#f8fafc; }
+
+    .tools-row{
+      padding: 6px 20px 0 20px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .btn-plus{
+      width:36px;height:36px;
+      border-radius:6px;
+      background: var(--green-2);
+      color:#fff;
+      border:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 6px 14px rgba(67,160,71,0.2);
+      text-decoration:none;
+    }
+
+    .btn-plus:hover{ opacity:.92; color:#fff; }
+
+    .results-label{
+      padding: 10px 20px;
+      color:#111827;
+      font-weight:700;
+    }
+
+    .table-wrap{
+      padding: 0 20px 18px 20px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      border:1px solid var(--border);
+    }
+
+    thead th{
+      background: var(--blue);
+      color:#fff;
+      padding:12px 10px;
+      font-size:0.9rem;
+      text-align:center;
+      border-right:1px solid rgba(255,255,255,0.15);
+      font-weight:700;
+    }
+
+    tbody td{
+      padding:12px 10px;
+      border-top:1px solid var(--border);
+      border-right:1px solid var(--border);
+      text-align:center;
+      font-size:0.9rem;
+      color:#111827;
+    }
+
+    tbody tr:nth-child(even){
+      background:#fafcff;
+    }
+
+    .badge-status{
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:0.8rem;
+      display:inline-block;
+      border:1px solid var(--border);
+    }
+
+    .active-badge{ background:#e8f5e9; color:#1b5e20; border-color:#c8e6c9; }
+    .inactive-badge{ background:#f3f4f6; color:#374151; border-color:#e5e7eb; }
+
+    .icon-btn{
+      width:34px;height:34px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      text-decoration:none;
+    }
+
+    .icon-btn:hover{ background:#f8fafc; }
+
+    .icon-edit i{ color:#111827; }
+    .icon-del i{ color:#111827; }
+
+    /* responsive */
+    @media (max-width: 900px){
+      .filter-actions{ width:100%; margin-left:0; }
+      .filter-item{ min-width: 100%; }
+      .filter-item label{ width:110px; }
+      .filter-item input, .filter-item select{ width:100%; min-width: 0; }
+    }
+  </style>
+</head>
+
+<body class="p-3 p-md-4">
+
+<div class="container">
+  <div class="page-wrap">
+
+    <div class="page-header">
+      <div class="avatar"><i class="fa-solid fa-box"></i></div>
+      <h4>Productos</h4>
+    </div>
+    <div class="green-line"></div>
+
+    <!-- ===== FILTROS ===== -->
+    <form method="GET" action="{{ url_for('productos_list') }}" class="filters">
+      <div class="filter-item">
+        <label>Nombre:</label>
+        <input type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Buscar producto...">
+      </div>
+
+      <div class="filter-item">
+        <label>Estado:</label>
+        <select name="estado">
+          {% set estado = request.args.get('estado','') %}
+          <option value="" {% if estado=='' %}selected{% endif %}>Todos</option>
+          <option value="1" {% if estado=='1' %}selected{% endif %}>Activo</option>
+          <option value="0" {% if estado=='0' %}selected{% endif %}>Inactivo</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label>Precio:</label>
+        <div class="d-flex gap-2" style="width:100%;">
+          <input type="number" step="0.01" min="0" name="min_price"
+                 value="{{ request.args.get('min_price','') }}" placeholder="Min" style="width:100%;">
+          <input type="number" step="0.01" min="0" name="max_price"
+                 value="{{ request.args.get('max_price','') }}" placeholder="Max" style="width:100%;">
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button type="submit" class="btn-green">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar
+        </button>
+
+        <a href="{{ url_for('productos_list') }}" class="btn-outline">
+          <i class="fa-solid fa-eraser"></i> Limpiar
+        </a>
+      </div>
+    </form>
+
+    <!-- ===== BOTÓN + (NUEVO) ===== -->
+    <div class="tools-row">
+      <a class="btn-plus" href="{{ url_for('productos_nuevo') }}" title="Nuevo Producto">
+        <i class="fa-solid fa-plus"></i>
+      </a>
+    </div>
+
+    <div class="results-label">[Resultados]</div>
+
+    <div class="table-wrap">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} py-2 small">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in productos %}
+            <tr>
+              <td>{{ p[0] }}</td>
+              <td style="text-align:left;">
+                <div style="font-weight:700;">{{ p[1] }}</div>
+                <div style="color:var(--muted); font-size:0.85rem;">{{ p[2] }}</div>
+              </td>
+              <td>${{ '%.2f'|format(p[3]) }}</td>
+              <td>{{ p[4] }}</td>
+              <td>
+                {% if p[5] == 1 %}
+                  <span class="badge-status active-badge">Activo</span>
+                {% else %}
+                  <span class="badge-status inactive-badge">Inactivo</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <a class="icon-btn icon-edit"
+                   href="{{ url_for('productos_editar', producto_id=p[0]) }}"
+                   title="Editar">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+              </td>
+
+              <td>
+                <form method="POST"
+                      action="{{ url_for('productos_eliminar', producto_id=p[0]) }}"
+                      onsubmit="return confirm('¿Eliminar este producto?');"
+                      style="display:inline;">
+                  <button type="submit" class="icon-btn icon-del" title="Eliminar">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" style="padding:20px; color:var(--muted);">
+                No hay productos registrados.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="mt-3 d-flex justify-content-end">
+        <a href="{{ url_for('dashboard') }}" class="btn-outline">
+          <i class="fa-solid fa-arrow-left"></i> Volver al Dashboard
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

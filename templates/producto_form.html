@@ -23,7 +23,7 @@
       <div class="topbar">
         <div>
           <h4 class="mb-0 fw-bold">{{ 'Nuevo Producto' if modo=='crear' else 'Editar Producto' }}</h4>
-          <div class="text-muted small">Hola, {{ nombre }}</div>
+          <div class="text-muted small">Aqui puedes realizar cambios {{ nombre }}</div>
         </div>
         <a class="btn btn-outline-secondary" href="{{ url_for('productos_list') }}">
           <i class="fas fa-arrow-left me-1"></i> Volver

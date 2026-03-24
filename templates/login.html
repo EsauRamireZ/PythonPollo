@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Sistema Seguro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-body: #f4f7f9;
+            --primary-navy: #1e3799; 
+            --text-main: #2d3436;
+            --border-color: #dee2e6;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* ===== BREADCRUMBS STYLES ===== */
+        .breadcrumb-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .breadcrumb {
+            background: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb-item {
+            display: inline-flex;
+            align-items: center;
+            color: #64748b;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-navy);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #0c2461;
+            background-color: rgba(30, 55, 153, 0.08);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background-color: rgba(30, 55, 153, 0.05);
+        }
+
+        .breadcrumb-separator {
+            margin: 0 10px;
+            color: #cbd5e1;
+            font-weight: 300;
+        }
+
+        .breadcrumb-icon {
+            margin-right: 8px;
+            font-size: 0.9rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Responsive breadcrumbs */
+        @media (max-width: 768px) {
+            .breadcrumb-container {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                position: fixed;
+            }
+            
+            .breadcrumb {
+                width: 100%;
+                justify-content: center;
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .login-card {
+                margin-top: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .breadcrumb {
+                font-size: 0.75rem;
+            }
+            
+            .breadcrumb-icon {
+                margin-right: 4px;
+                font-size: 0.8rem;
+            }
+            
+            .breadcrumb-separator {
+                margin: 0 6px;
+            }
+        }
+        /* ===== FIN BREADCRUMBS ===== */
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid #edf2f7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: #f1f3f9;
+            color: var(--primary-navy);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 15px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(30, 55, 153, 0.1);
+            border-color: var(--primary-navy);
+            background-color: #fff;
+        }
+
+        /* === ANIMACIONES DE VALIDACIÓN === */
+        .valid-field {
+            border-color: var(--success) !important;
+            animation: bounce 0.4s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .invalid-field {
+            border-color: var(--error) !important;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .btn-submit {
+            background-color: var(--primary-navy);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(30, 55, 153, 0.15);
+            color: white;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f3f9;
+        }
+
+        .link-navy {
+            color: var(--primary-navy);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .link-navy:hover {
+            text-decoration: underline;
+            color: #0c2461;
+        }
+
+        /* Mejoras visuales para inputs */
+        .input-group {
+            position: relative;
+        }
+
+        /* Botón para mostrar/ocultar contraseña */
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            z-index: 2;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BREADCRUMBS ===== -->
+    <div class="breadcrumb-container">
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <div class="breadcrumb-item">
+                <i class="fas fa-home breadcrumb-icon"></i>
+                <a href="/">Inicio</a>
+            </div>
+            <span class="breadcrumb-separator">/</span>
+            <div class="breadcrumb-item active">
+                <i class="fas fa-sign-in-alt breadcrumb-icon"></i>
+                <span>Iniciar Sesión</span>
+            </div>
+        </nav>
+    </div>
+
+    <div class="login-card">
+        <div class="header-area">
+            <div class="header-icon">
+                <i class="fas fa-user-lock"></i>
+            </div>
+            <h4 class="fw-bold">Bienvenido</h4>
+            <p class="text-muted small">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} py-2 small shadow-sm">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}" class="needs-validation" novalidate id="loginForm">
+            
+            <div class="mb-3">
+                <label class="form-label">Correo Electrónico</label>
+                <div class="input-group">
+                    <input type="email" class="form-control" name="email" id="email" 
+                           placeholder="nombre@correo.com" required
+                           autocomplete="email">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Contraseña</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" name="password" id="password" 
+                           placeholder="••••••••" required
+                           autocomplete="current-password">
+                    <button type="button" class="password-toggle" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="text-end mt-1">
+                    <a href="#" class="small text-muted text-decoration-none">¿Olvidaste tu contraseña?</a>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-submit">Entrar al Sistema</button>
+        </form>
+
+        <div class="footer-links">
+            <p class="small text-muted mb-0">¿No tienes una cuenta? 
+                <a href="{{ url_for('register') }}" class="link-navy">Regístrate ahora</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('input');
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        // Función para mostrar/ocultar contraseña
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+
+        // Validación en tiempo real
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                if (input.checkValidity()) {
+                    input.classList.remove('invalid-field');
+                    input.classList.add('valid-field');
+                    // Reset de animación para que pueda repetirse
+                    setTimeout(() => input.classList.remove('valid-field'), 400);
+                } else {
+                    input.classList.remove('valid-field');
+                    if (input.value.length > 0) {
+                        input.classList.add('invalid-field');
+                    }
+                }
+            });
+        });
+
+        // Validación al enviar
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', (e) => {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Protección contra inspección de contraseña
+        passwordInput.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Animación de entrada para breadcrumbs
+        document.addEventListener('DOMContentLoaded', function() {
+            const breadcrumb = document.querySelector('.breadcrumb');
+            if (breadcrumb) {
+                breadcrumb.style.opacity = '0';
+                breadcrumb.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    breadcrumb.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    breadcrumb.style.opacity = '1';
+                    breadcrumb.style.transform = 'translateY(0)';
+                }, 300);
+            }
+            
+            // Enfocar automáticamente el campo de email
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                setTimeout(() => {
+                    emailInput.focus();
+                }, 500);
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

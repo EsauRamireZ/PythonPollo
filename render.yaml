@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: flask-auth-system
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: RECAPTCHA_SITE_KEY
+        sync: false
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
